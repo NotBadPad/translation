@@ -100,3 +100,21 @@ Time: 2014-10-14 15:25:21
 ...
 
 ```
+
+##基本概念
+接下来，我们通过回顾之前那个简单的例子，来详细的说明Spark Streaming的基本概念。
+
+####相关依赖
+与Spark相似，Spark Streaming的依赖包可以从Maven仓库获取。你需要把下边的依赖加入你的Maven或SBT项目，以开发你自己的程序。
+```xml
+<dependency>
+    <groupId>org.apache.spark</groupId>
+    <artifactId>spark-streaming_2.10</artifactId>
+    <version>1.4.1</version>
+</dependency>
+```
+为了从Kafka、Flume和Kinesis这样未包含在核心API中的数据源获取数据，你还需要将相应的模块spark-streaming-xyz_2.10加入到依赖中。例如，下边这些组件：
+![](https://github.com/NotBadPad/translation/blob/master/bigdate/img/spark-1.png)
+若要获取最新的列表，请参考maven仓库中完整的支持的列表。
+
+####初始化StreamingContext
