@@ -5,6 +5,23 @@
 * 基本概念
 	* 相关依赖
 	* 初始化StreamingContext
+	* 离散流(DStream)
+	* 输入流和接收器
+	* DStream中的转换
+	* DStream的输出操作
+	* DataFrame和SQL操作
+	* MLlib操作
+	* 缓存/持久化
+	* 检查点
+	* 部署程序
+	* 监控程序
+* 性能优化
+	* 减少批处理时间
+	* 设置合理的批处理间隔
+	* 内存调优
+* 容灾处理
+* 0.9.1以下版本迁移至1.x指南
+* 接下来学习什么
 
 ##概述
 Spark Streaming是一个基于Spark核心API实现的易拓展、高效、可靠的实时流数据处理拓展组件。Spark的数据可以从多种数据源获取，如Kafka, Flume, Twitter, ZeroMQ, Kinesis或TCP sockets，并且可以通过使用map, reduce, join and window等高级函数进行复杂的算法处理，最终处理过的数据可以写入文件系统、数据库或者实时可视化报表。实际上，你还能在流处理的过程中使用Spark的机器学习和图处理算法。
