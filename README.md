@@ -5,3 +5,8 @@
 * 快速开始
 * Spark编程指南
 * [Spark Streaming 编程指南](https://github.com/NotBadPad/translation/blob/master/bigdate/spark/spark-streaming.md)
+* Spark SQL和DataFrame指南
+* MLlib（机器学习）
+* GraphX（图编程）
+* Bagel（Spark中的Pregel）
+* SparkR（Spark中的R）
