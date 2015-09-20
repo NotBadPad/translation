@@ -118,3 +118,12 @@ Time: 2014-10-14 15:25:21
 若要获取最新的列表，请参考maven仓库中完整的支持的列表。
 
 ####初始化StreamingContext
+在初始化StreamingContext的时候，StreamingContext必须首先被创建，它是Spark Streaming所有功能的入口。
+StreamingContext可以使用SparkContext来创建
+```python
+from pyspark import SparkContext
+from pyspark.streaming import StreamingContext
+
+sc = SparkContext(master, appName)
+ssc = StreamingContext(sc, 1)
+```
