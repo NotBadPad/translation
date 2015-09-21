@@ -127,3 +127,20 @@ from pyspark.streaming import StreamingContext
 sc = SparkContext(master, appName)
 ssc = StreamingContext(sc, 1)
 ```
+参数appName你的应用在集群UI中显示的名字，参数master是Spark,Mesos或YARN集群的URL，如果是本地模式则使用特殊字符串“local[\*]”。实际上，当在集群上运行的时候，我们并不会把master硬编码在程序里，而是通过spark-submit启动应用并接受它。然而，对于本地测试或单元测试，你可以直接通过“local[*]”在同进程运行Spark Streaming（可以检测到本地系统的核数）。
+批处理间隔的设置必须依据应用潜在的需求和集群可用的资源。详情可以参看调优部分。
+context创建之后，我们需要做如下事情：
+	1. 通过定义输入DStreams来定义输入源
+	2. 通过转换和输出操作定义DStreams的流计算
+	3. 使用streamingContext.start()开始接收数据并处理
+	4. 使用streamingContext.awaitTermination()等待处理结束（手动或者由于错误）
+	5. 程序可以手动通过streamingContext.stop()结束
+需要记住的点：
+	* 一旦context启动，不能再有新的流处理被设置或添加
+	* 一旦context停止，将不能重启
+	* 同一时刻一个JVM中只能有一个StreamingContext是活跃的
+	* StreamingContext的stop()也会结束SparkContext。如果仅仅要结束StreamingContext，需要将stop()的可选参数stopSparkContext设置为false
+	* SparkContext可以通过创建多个StreamingContext来重用，只要在下一个StreamingContext创建前前一个StreamingContext停止（SparkContext未停止）就行
+
+####离散流(DStream)
+
