@@ -143,4 +143,10 @@ context创建之后，我们需要做如下事情：
 	* SparkContext可以通过创建多个StreamingContext来重用，只要在下一个StreamingContext创建前前一个StreamingContext停止（SparkContext未停止）就行
 
 ####离散流(DStream)
+离散流或DStream是Spark Streaming提供的基本抽象。它表示一个连续的数据流，既可以是从数据源收到的输入数据流，也可以是通过转换输入流生成的。从内部看，DStream表示一组连续的RDD，RDD是Spark里不可变、分布式数据集的抽象。DStream中的每个RDD包含的数据都有一定的时间间隔，如下图所示：
+![](http://spark.apache.org/docs/1.4.1/img/streaming-dstream.png)
+任何DStream上的操作都转换为底层RDD上的操作。例如，之前将行流转为单词的例子中，flatMap操作在lines DStream中的每一个RDD上执行，生成words DStream的RDD，如下图：
+![](http://spark.apache.org/docs/1.4.1/img/streaming-dstream-ops.png)
+底层的RDD转换由Spark进行计算。DStream操作隐藏了大部分细节，为开发者提供了便利的高级接口。这些操作将在后边的章节讨论。
 
+####输入DStreams和接收器
