@@ -167,3 +167,23 @@ Spark Streaming提供了两类内置数据源：
 * 当拓展的逻辑运行在集群上时，从Spark Streaming应用申请的核的数量一定要大于接收器的数量，否则系统将能够接收数据，但是无法处理。
 
 #####基本源
+我们已经看过前边那个简单的例子了，他创建了一个从TCP socket接收文本数据的DStream。除了sockets，StreamingContext API还提供了从文件和Akka actors作为输入创建DStreams的方法。
+
+* File Streams：DStreams可以通过如下方式创建，能够从任何文件系统接收数据，兼容了HDFS API：
+```python
+ streamingContext.textFileStream(dataDirectory)
+``` 	
+Spark Streaming会监视dataDirectory目录并处理目录中创建的文件（写入嵌套目录的不支持）。要注意：
+
+* 所有文件要拥有相同的格式
+* 文件必须要通过移动或重命名子的方式在 dataDirectory中创建
+* 文件一点移入，就不能改变，如果文件是持续写入的，新数据将不会别读取
+**Python API：**fileStream在python中是不可用的，而textFileStream 是可用的
+
+* 基于自定义Actors的Streams：DStreams可以通过使用streamingContext.actorStream(actorProps, actor-name)来接收Akka actors的数据创建。详情见自定义接收器指南。
+**Python API：**actorStream 在python中是不可用的
+* 以RDDs队列作为Streams：为了用测试数据测试 Spark Streaming程序，也可以使用streamingContext.queueStream(queueOfRDDs)创建一个基于RDDs队列的DStream。DStream会把push进队列的RDD作为批处理数据，像流那样处理它们。
+
+想要获取更多细节，可以查看Python中StreamingContext相关的API文档。
+
+####高级源
