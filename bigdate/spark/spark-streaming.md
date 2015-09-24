@@ -187,3 +187,4 @@ Spark Streaming会监视dataDirectory目录并处理目录中创建的文件（�
 想要获取更多细节，可以查看Python中StreamingContext相关的API文档。
 
 ####高级源
+**Python API** Spark 1.4.1的源中，Python API只有Kafka是可用的，其他的我们将在将来加入。
