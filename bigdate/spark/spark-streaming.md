@@ -186,6 +186,50 @@ Spark Streaming会监视dataDirectory目录并处理目录中创建的文件（�
 
 想要获取更多细节，可以查看Python中StreamingContext相关的API文档。
 
-####高级source
+#####高级source
 **Python API** Spark 1.4.1的source中，Python API只有Kafka是可用的，其他的我们将在将来加入。
-这一类sources需要额外的库，其中有一些有复杂的依赖。
+这一类sources需要额外的库，其中有一些有复杂的依赖。因此为了减少依赖库之间的冲突，创建从source中DStreams的功能被封装在了单独的库里边，以便需要时轻易的被引用。例如你想从Twitter流的数据中创建DStreams，你可以按如下步骤：
+
+* 链接：把包spark-streaming-twitter_2.10加入到SBT/Maven项目的依赖里边
+* 编程：像下边一样导入TwitterUtils，并使用TwitterUtils.createStream创建DStreams
+* 部署：将所有依赖打成jar包，然后部署。之后部署章节将会详细讲述。
+```java
+import org.apache.spark.streaming.twitter.*;
+
+TwitterUtils.createStream(jssc);
+```
+注意在Spark shell中这类sources是不可用的。因此依赖于高级source的程序不能再shell下测试。如果你真的想要使用，需要把所有maven中依赖的jar包都下载下来加入到classpath。
+其中一些高级source如下：
+
+* Kafka：Spark Streaming 1.4.1与Kafka 0.8.2.1兼容
+* Flume：Spark Streaming 1.4.1与Flume 1.4.0兼容
+* Kinesis：参考Kinesis集成指南
+* Twitter: 懒得啰嗦，用Twitter的话估计也用不着看中文了
+
+#####自定义source
+**Python API：**同样不支持python
+输入DStreams也可以从自定义source创建，你需要做的是定义一个receiver从自定义source接收数据，并推送到Spark。
+
+#####Receiver的可靠性
+有两种方式保证其可靠性。Sources（像Kafka和Flume）允许转换数据被确认。如果系统从可靠source接收的数据被确认是正确的，就可以任务没有数据因为任何错误而丢失。这导致有两种receivers：
+
+* 可靠地Receiver：可靠的receiver会在收到数据并存储到Spark后向source发送确认。
+* 不可靠的Receiver：不可靠的Receiver不会像source发送确认，这种可以用于不支持确认的source，而且对于一些可靠source并不希望或者需要确认这种复杂的处理。
+更多关系怎样写一个可靠的receiver参考自定义Receiver指南。
+
+####DStreams中的转换
+与RDD相似，转换允许DStream中的数据被修改。DStream支持很多普通Spark RDD的转换操作。其中比较常用的如下：
+* 
+	* map(func)：将原DStream中的每一项通过func处理后，返回一个新的DStream
+	* flatMap(func)：与map相似，每一个输入项可以被映射成0个或多个项
+	* filter(func)：返回通过func过滤后的项
+	* repartition(numPartitions)：通过创建更多或更少的partition来改变DStream的并行性
+	* union(otherStream)：将原DStream和otherStream联接后作为一个新的DStream返回
+	* count()：通过统计每个RDD元素的数量，最后返回一个只有个单值RDD的DStream
+	* reduce(func)：通过使用func（两个参数、一个返回值）进行聚合操作，返回一个单值的DStream。这个func应该可以被组合，以便并行计算
+	* countByValue()：如果DStream的元素类型是K，则返回一个(K,Long)类型的DStream，值是每个K在RDD中出现的频次
+	* reduceByKey(func, [numTasks])：对于(K,V)类型的DStream，将会返回一个(K, V)的键值对，其中会把每个K对应的value通过func进行聚合。**注意**：默认情况下，将会使用默认参数设置并发任务（本地模式是2，集群模式下取决于设置的配置参数spark.default.parallelism）去进行group，你可以通过设置numTasks参数改变task的数量
+	* join(otherStream, [numTasks])：对于两个(K, V)和(K, W)两个DStream，将会返回(K,(V,W))类型的DStream
+	* cogroup(otherStream, [numTasks])：对于两个(K, V)和(K, W)两个DStream，将会返回(K,seq[V],seq[W])类型的DStream
+	* transform(func)：通过使用RDD对RDD的func返回一个新的DStream，这可以被用于任意的DStream转换操作
+	* updateStateByKey(func)：使用给定的func根据新值跟新对应key之前的状态，最终返回一个新状态的DStream。这可以用于维护key的任意状态。
