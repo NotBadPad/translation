@@ -233,3 +233,6 @@ TwitterUtils.createStream(jssc);
 	* cogroup(otherStream, [numTasks])：对于两个(K, V)和(K, W)两个DStream，将会返回(K,seq[V],seq[W])类型的DStream
 	* transform(func)：通过使用RDD对RDD的func返回一个新的DStream，这可以被用于任意的DStream转换操作
 	* updateStateByKey(func)：使用给定的func根据新值跟新对应key之前的状态，最终返回一个新状态的DStream。这可以用于维护key的任意状态。
+
+这里边一些转换是值得详细讨论的
+#####UpdateStateByKey操作
