@@ -236,3 +236,21 @@ TwitterUtils.createStream(jssc);
 
 这里边一些转换是值得详细讨论的
 #####UpdateStateByKey操作
+updateStateByKey操作允许你维持任意的状态并同时用新的信息更新状态。你需要按如下步骤使用它：
+
+* 定义状态，可以使任意数据类型
+* 定义状态更新方法，定义一个能够使用之前状态和输入流中新值来更新状态的方法
+
+我们来举个例子，假如你想统一个文本流中单词的变化的数量，这里变化数量就是integer的状态，我们定义如下：
+
+```python
+def updateFunction(newValues, runningCount):
+    if runningCount is None:
+       runningCount = 0
+    return sum(newValues, runningCount)  # add the new values with the previous running count to get the new count
+```
+可以用于一个包含单词的DStream（包含(word,1)键值对的DStream）
+
+```python
+runningCounts = pairs.updateStateByKey(updateFunction)
+```
