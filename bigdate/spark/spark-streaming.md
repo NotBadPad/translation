@@ -296,4 +296,28 @@ windowedWordCounts = pairs.reduceByKeyAndWindow(lambda x, y: x + y, lambda x, y:
 	* countByValueAndWindow(windowLength, slideInterval, [numTasks])：当在一个(K,V)类型的DStream调用时，会返回一个(K,Long)，value是每个key在窗口中出现的频次。
 
 ##### Join 操作 #####
+最后，很值得介绍下在Spark Streaming中执行各类join操作有多容易。
+###### Stream-stream joins ######
+Streams很容易与其他Streams做连接。
+```python
+stream1 = ...
+stream2 = ...
+joinedStream = stream1.join(stream2)
+```
+在每个批处理间隔，stream1生成的RDD会与stream2生成的RDD做join，你也可以使用leftOuterJoin, rightOuterJoin, fullOuterJoin。此外，windows之间的join也很常用，这都很容易实现。
+```python
+windowedStream1 = stream1.window(20)
+windowedStream2 = stream2.window(60)
+joinedStream = windowedStream1.join(windowedStream2)
+```
+###### Stream-dataset joins ######
+在之前解释DStream.transform的时候已经举过例子了，这里还有个一个window与数据集join的例子：
+```python
+dataset = ... # some RDD
+windowedStream = stream.window(20)
+joinedStream = windowedStream.transform(lambda rdd: rdd.join(dataset))
+```
+实际上你可以动态的改变加入的数据集。每个批处理间隔执行的transform可以使用当前dataset指向的数据集。
+DStream完整的transformations操作列表可以参见API文档。
 
+#### DStream的输出操作 ####
