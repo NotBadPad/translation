@@ -117,7 +117,7 @@ Time: 2014-10-14 15:25:21
 ![](https://github.com/NotBadPad/translation/img/spark-1.png)
 若要获取最新的列表，请参考maven仓库中完整的支持的列表。
 
-####初始化StreamingContext
+#### 初始化StreamingContext ####
 在初始化StreamingContext的时候，StreamingContext必须首先被创建，它是Spark Streaming所有功能的入口。
 StreamingContext可以使用SparkContext来创建:
 ```python
@@ -145,14 +145,14 @@ context创建之后，我们需要做如下事情：
 * StreamingContext的stop()也会结束SparkContext。如果仅仅要结束StreamingContext，需要将stop()的可选参数stopSparkContext设置为false
 * SparkContext可以通过创建多个StreamingContext来重用，只要在下一个StreamingContext创建前前一个StreamingContext停止（SparkContext未停止）就行
 
-####离散流(DStream)
+#### 离散流(DStream) ####
 离散流或DStream是Spark Streaming提供的基本抽象。它表示一个连续的数据流，既可以是从source收到的输入数据流，也可以是通过转换输入流生成的。从内部看，DStream表示一组连续的RDD，RDD是Spark里不可变、分布式数据集的抽象。DStream中的每个RDD包含的数据都有一定的时间间隔，如下图所示：
 ![](http://spark.apache.org/docs/1.4.1/img/streaming-dstream.png)
 任何DStream上的操作都转换为底层RDD上的操作。例如，之前将行流转为单词的例子中，flatMap操作在lines DStream中的每一个RDD上执行，生成words DStream的RDD，如下图：
 ![](http://spark.apache.org/docs/1.4.1/img/streaming-dstream-ops.png)
 底层的RDD转换由Spark进行计算。DStream操作隐藏了大部分细节，为开发者提供了便利的高级接口。这些操作将在后边的章节讨论。
 
-####输入DStreams和接收器
+#### 输入DStreams和接收器 ####
 输入DStreams是一个用来表示从source接收到数据的流。在前边的例子中，lines就表示一个从netcat服务器接收到的流数据的DStream。所有的输入DStreams（除了文件流，本节后边讨论）都与一个Receiver对象关联，它从source接收数据并存储在Spark的内存以便计算。
 Spark Streaming提供了两类内置数据source：
 
@@ -166,7 +166,7 @@ Spark Streaming提供了两类内置数据source：
 * 当以本地模式运行时，不要使用local或local\[1\]作为master的URL。这意味着只有一个线程被用于执行本地任务。如果你使用一个基于接收器的输入DStream，这是仅有的线程将被用来运行接收器，将没有线程用来接收数据。因此，当已本地模式运行时，要使用local\[n\]作为URL，其中n>接收器的数量。
 * 当拓展的逻辑运行在集群上时，从Spark Streaming应用申请的核的数量一定要大于接收器的数量，否则系统将能够接收数据，但是无法处理。
 
-#####基本source
+##### 基本source #####
 我们已经看过前边那个简单的例子了，他创建了一个从TCP socket接收文本数据的DStream。除了sockets，StreamingContext API还提供了从文件和Akka actors作为输入创建DStreams的方法。
 
 * File Streams：DStreams可以通过如下方式创建，能够从任何文件系统接收数据，兼容了HDFS API：
@@ -186,7 +186,7 @@ Spark Streaming会监视dataDirectory目录并处理目录中创建的文件（�
 
 想要获取更多细节，可以查看Python中StreamingContext相关的API文档。
 
-#####高级source
+##### 高级source #####
 **Python API** Spark 1.4.1的source中，Python API只有Kafka是可用的，其他的我们将在将来加入。
 这一类sources需要额外的库，其中有一些有复杂的依赖。因此为了减少依赖库之间的冲突，创建从source中DStreams的功能被封装在了单独的库里边，以便需要时轻易的被引用。例如你想从Twitter流的数据中创建DStreams，你可以按如下步骤：
 
@@ -206,18 +206,18 @@ TwitterUtils.createStream(jssc);
 * Kinesis：参考Kinesis集成指南
 * Twitter: 懒得啰嗦，用Twitter的话估计也用不着看中文了
 
-#####自定义source
+##### 自定义source #####
 **Python API：**同样不支持python
 输入DStreams也可以从自定义source创建，你需要做的是定义一个receiver从自定义source接收数据，并推送到Spark。
 
-#####Receiver的可靠性
+##### Receiver的可靠性 #####
 有两种方式保证其可靠性。Sources（像Kafka和Flume）允许转换数据被确认。如果系统从可靠source接收的数据被确认是正确的，就可以任务没有数据因为任何错误而丢失。这导致有两种receivers：
 
 * 可靠地Receiver：可靠的receiver会在收到数据并存储到Spark后向source发送确认。
 * 不可靠的Receiver：不可靠的Receiver不会像source发送确认，这种可以用于不支持确认的source，而且对于一些可靠source并不希望或者需要确认这种复杂的处理。
 更多关系怎样写一个可靠的receiver参考自定义Receiver指南。
 
-####DStreams中的转换
+#### DStreams中的转换 ####
 与RDD相似，转换允许DStream中的数据被修改。DStream支持很多普通Spark RDD的转换操作。其中比较常用的如下：
 * 
 	* map(func)：将原DStream中的每一项通过func处理后，返回一个新的DStream
@@ -235,7 +235,8 @@ TwitterUtils.createStream(jssc);
 	* updateStateByKey(func)：使用给定的func根据新值跟新对应key之前的状态，最终返回一个新状态的DStream。这可以用于维护key的任意状态。
 
 这里边一些转换是值得详细讨论的
-#####UpdateStateByKey操作
+
+##### UpdateStateByKey操作 #####
 updateStateByKey操作允许你维持任意的状态并同时用新的信息更新状态。你需要按如下步骤使用它：
 
 * 定义状态，可以使任意数据类型
@@ -254,3 +255,45 @@ def updateFunction(newValues, runningCount):
 ```python
 runningCounts = pairs.updateStateByKey(updateFunction)
 ```
+每个单词都将会调用这个更新方法，使用1的序列作为newValues（来自(word,1)）,之前的count值作为runningCount。要看完整的python代码，参考[stateful_network_wordcount.py](https://github.com/apache/spark/blob/master/examples/src/main/python/streaming/stateful_network_wordcount.py)
+
+注意使用updateStateByKey要求checkpoint目录被配置。
+
+##### Transform操作 #####
+
+transform操作允许在DStream上使用任意的RDD-to-RDD的方法，它可以被用来使用DStream API中为被暴露出来的RDD操作。例如，将数据流中每个批处理与另外一个数据集做join操作，DStream API并没有直接支持，但是你可以使用transform做到，这能够实现非常强大的拓展。例如，可以做实时数据清洗通过把输入数据和预先计算好的垃圾邮件数据作对比并过滤。
+
+```python
+spamInfoRDD = sc.pickleFile(...) # RDD containing spam information
+
+# join data stream with spam information to do data cleaning
+cleanedDStream = wordCounts.transform(lambda rdd: rdd.join(spamInfoRDD).filter(...))
+```
+注意提供的方法会在批处理间隔被调用，这允许你做时变操作，也就是说，RDD操作、分区数量、广播变量可以在批处理之间被改变。
+
+##### Window操作 #####
+Spark Streaming同样提供了窗口计算,允许你在数据的滑动窗口上使用转换。下图展示了一个滑动窗口：
+![](http://spark.apache.org/docs/1.4.1/img/streaming-dstream-window.png)
+如图所示，每次窗口在source DStream上滑动，window内的source RDD会合并，并且作为一个windowed DStream处理。在上边这个例子里，操作被用于最后三个时间单元的数据，并且每次滑动2个时间单元，这意味着每个window操作都需要2个参数：
+
+* window length：window的持续时间
+* sliding interval：window执行的间隔
+
+这两个参数必须是source DStream中批处理间隔的倍数
+我们用个例子来说明，如在前边例子中你想要统计30s内单词的数量，每隔10s执行一次。为达到目的，我们需要在过期30s的数据上使用reduceByKey操作处理(word,1)，这个操作使用reduceByKeyAndWindow就行：
+```python
+# Reduce last 30 seconds of data, every 10 seconds
+windowedWordCounts = pairs.reduceByKeyAndWindow(lambda x, y: x + y, lambda x, y: x - y, 30, 10)
+```
+一些常用的window操作如下：
+
+* 
+	* window(windowLength, slideInterval)：返回一个给予window批处理计算的DStream
+	* countByWindow(windowLength, slideInterval)：返回滑动窗口中元素的数量
+	* reduceByWindow(func, windowLength, slideInterval)：返回一个单值的stream，通过在滑动间隔调用func来聚合。该方法需要能够关联，以便能够进行并行处理。
+	* reduceByKeyAndWindow(func, windowLength, slideInterval, [numTasks])：当在一个(K,V)类型的DStream调用时，会返回一个(K,V)类型的DStream，其中窗口中每个key的value值都会通过func聚合。**注意**：默认情况下，将会使用默认参数设置并发任务（本地模式是2，集群模式下取决于设置的配置参数spark.default.
+	* reduceByKeyAndWindow(func, invFunc, windowLength, slideInterval, [numTasks])：A more efficient version of the above reduceByKeyAndWindow() where the reduce value of each window is calculated incrementally using the reduce values of the previous window. This is done by reducing the new data that enters the sliding window, and “inverse reducing” the old data that leaves the window. An example would be that of “adding” and “subtracting” counts of keys as the window slides. However, it is applicable only to “invertible reduce functions”, that is, those reduce functions which have a corresponding “inverse reduce” function (taken as parameter invFunc). Like in reduceByKeyAndWindow, the number of reduce tasks is configurable through an optional argument. Note that checkpointing must be enabled for using this operation.（直接看英文吧，这段实在翻译不动。这是reduceByKeyAndWindow的增强版，可以把之前窗口计算的值累加到当前窗口）
+	* countByValueAndWindow(windowLength, slideInterval, [numTasks])：当在一个(K,V)类型的DStream调用时，会返回一个(K,Long)，value是每个key在窗口中出现的频次。
+
+##### Join 操作 #####
+
