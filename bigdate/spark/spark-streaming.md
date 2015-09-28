@@ -219,6 +219,7 @@ TwitterUtils.createStream(jssc);
 
 #### DStreams中的转换 ####
 与RDD相似，转换允许DStream中的数据被修改。DStream支持很多普通Spark RDD的转换操作。其中比较常用的如下：
+
 * 
 	* map(func)：将原DStream中的每一项通过func处理后，返回一个新的DStream
 	* flatMap(func)：与map相似，每一个输入项可以被映射成0个或多个项
