@@ -1,14 +1,14 @@
 #目录
 
-* 概述
-* 一个简单的例子
-* 基本概念
-	* 相关依赖
-	* 初始化StreamingContext
-	* 离散流(DStream)
-	* 输入流和接收器
-	* DStream中的转换
-	* DStream的输出操作
+* [概述](\#t1)
+* [一个简单的例子](\#t2)
+* [基本概念](\#t3)
+	* [相关依赖](\#t3-1)
+	* [初始化StreamingContext](\#t3-2)
+	* [离散流(DStream)](\#t3-3)
+	* [输入流和接收器](\#t3-4)
+	* [DStream中的转换](\#t3-5)
+	* [DStream的输出操作](\#t3-6)
 	* DataFrame和SQL操作
 	* MLlib操作
 	* 缓存/持久化
@@ -23,7 +23,7 @@
 * 0.9.1以下版本迁移至1.x指南
 * 接下来学习什么
 
-##概述
+## <a NAME="t1">概述</a>
 Spark Streaming是一个基于Spark核心API实现的易拓展、高效、可靠的实时流数据处理拓展组件。Spark的数据可以从多种数据源获取，如Kafka, Flume, Twitter, ZeroMQ, Kinesis或TCP sockets，并且可以通过使用map, reduce, join and window等高级函数进行复杂的算法处理，最终处理过的数据可以写入文件系统、数据库或者实时可视化报表。实际上，你还能在流处理的过程中使用Spark的机器学习和图处理算法。
 ![](http://spark.apache.org/docs/latest/img/streaming-arch.png)
 从内部看，他的工作原理如下图。Spark Streaming接收输入数据流，并将这些数据分割成多个batch（这里直接用batch，感觉批次听着挺怪），然后再由Spark engine处理并生成最终的结果。
@@ -32,7 +32,7 @@ Spark Streaming提供了一个叫做离散流(DStream)的高级抽象，用来�
 本指南可以告诉你如何使用DStreams来开发Spark Streaming程序。你可以使用Scala、Java或者Python编写程序，所有版本这里都会提供。
 	注意：在Python中有一些API不同或者不可用，这些地方将会高亮标记。
 
-##一个简单的例子
+## <a NAME="t2">一个简单的例子</a>
 在我们详细的介绍如何编写你的Spark Streaming程序之前，我们先来看一个简单的Spark Streaming程序是什么样子的。假如我们打算统计一个从数据服务器的TCP socket获取的文本文件中的单词个数，我们需要按照下边来做。
 
 首先，我们需要导入StreamingContext，他是所有流处理功能的入口。我们可以设置2个本地线程，并设置批处理间隔为1s。
@@ -101,10 +101,10 @@ Time: 2014-10-14 15:25:21
 
 ```
 
-##基本概念
+## <a NAME="t3">基本概念</a>
 接下来，我们通过回顾之前那个简单的例子，来详细的说明Spark Streaming的基本概念。
 
-####相关依赖
+#### <a NAME="t3-1">相关依赖</a>
 与Spark相似，Spark Streaming的依赖包可以从Maven仓库获取。你需要把下边的依赖加入你的Maven或SBT项目，以开发你自己的程序。
 ```xml
 <dependency>
@@ -118,7 +118,7 @@ Time: 2014-10-14 15:25:21
 
 若要获取最新的列表，请参考maven仓库中完整的支持的列表。
 
-#### 初始化StreamingContext ####
+#### <a NAME="t3-2">初始化StreamingContext</a> ####
 在初始化StreamingContext的时候，StreamingContext必须首先被创建，它是Spark Streaming所有功能的入口。
 StreamingContext可以使用SparkContext来创建:
 ```python
@@ -146,7 +146,7 @@ context创建之后，我们需要做如下事情：
 * StreamingContext的stop()也会结束SparkContext。如果仅仅要结束StreamingContext，需要将stop()的可选参数stopSparkContext设置为false
 * SparkContext可以通过创建多个StreamingContext来重用，只要在下一个StreamingContext创建前前一个StreamingContext停止（SparkContext未停止）就行
 
-#### 离散流(DStream) ####
+#### <a NAME="t3-3">离散流(DStream)</a> ####
 离散流或DStream是Spark Streaming提供的基本抽象。它表示一个连续的数据流，既可以是从source收到的输入数据流，也可以是通过转换输入流生成的。从内部看，DStream表示一组连续的RDD，RDD是Spark里不可变、分布式数据集的抽象。DStream中的每个RDD包含的数据都有一定的时间间隔，如下图所示：
 ![](http://spark.apache.org/docs/1.4.1/img/streaming-dstream.png)
 
@@ -155,7 +155,7 @@ context创建之后，我们需要做如下事情：
 
 底层的RDD转换由Spark进行计算。DStream操作隐藏了大部分细节，为开发者提供了便利的高级接口。这些操作将在后边的章节讨论。
 
-#### 输入DStreams和接收器 ####
+#### <a NAME="t3-4">输入DStreams和接收器</a> ####
 输入DStreams是一个用来表示从source接收到数据的流。在前边的例子中，lines就表示一个从netcat服务器接收到的流数据的DStream。所有的输入DStreams（除了文件流，本节后边讨论）都与一个Receiver对象关联，它从source接收数据并存储在Spark的内存以便计算。
 Spark Streaming提供了两类内置数据source：
 
@@ -220,7 +220,7 @@ TwitterUtils.createStream(jssc);
 * 不可靠的Receiver：不可靠的Receiver不会像source发送确认，这种可以用于不支持确认的source，而且对于一些可靠source并不希望或者需要确认这种复杂的处理。
 更多关系怎样写一个可靠的receiver参考自定义Receiver指南。
 
-#### DStreams中的转换 ####
+#### <a NAME="t3-5">DStreams中的转换</a> ####
 与RDD相似，转换允许DStream中的数据被修改。DStream支持很多普通Spark RDD的转换操作。其中比较常用的如下：
 
 * 
@@ -325,7 +325,7 @@ joinedStream = windowedStream.transform(lambda rdd: rdd.join(dataset))
 实际上你可以动态的改变加入的数据集。每个批处理间隔执行的transform可以使用当前dataset指向的数据集。
 DStream完整的transformations操作列表可以参见API文档。
 
-#### DStream的输出操作 ####
+#### <a NAME="t3-6">DStream的输出操作</a> ####
 输出操作允许DStream的数据被写入外部系统，如数据库或者文件系统。由于输出操作实际上允许转换后的数据被外部系统使用，这会触发DStream的转换操作实际的去执行。现在，我们看下下边这些输出操作的定义：
 
 * print()：在运行streaming程序的驱动结点上打印每个批处理前10个元素。对于开发和调试很有用。**Python API** python中使用pprint()
