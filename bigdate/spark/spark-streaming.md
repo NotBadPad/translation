@@ -114,7 +114,8 @@ Time: 2014-10-14 15:25:21
 </dependency>
 ```
 为了从Kafka、Flume和Kinesis这样未包含在核心API中的数据源获取数据，你还需要将相应的模块spark-streaming-xyz_2.10加入到依赖中。例如，下边这些组件：
-![](https://github.com/NotBadPad/translation/blob/master/img/spark-1.png)
+![](https://github.com/NotBadPad/translation/raw/master/img/spark-1.png)
+
 若要获取最新的列表，请参考maven仓库中完整的支持的列表。
 
 #### 初始化StreamingContext ####
@@ -148,8 +149,10 @@ context创建之后，我们需要做如下事情：
 #### 离散流(DStream) ####
 离散流或DStream是Spark Streaming提供的基本抽象。它表示一个连续的数据流，既可以是从source收到的输入数据流，也可以是通过转换输入流生成的。从内部看，DStream表示一组连续的RDD，RDD是Spark里不可变、分布式数据集的抽象。DStream中的每个RDD包含的数据都有一定的时间间隔，如下图所示：
 ![](http://spark.apache.org/docs/1.4.1/img/streaming-dstream.png)
+
 任何DStream上的操作都转换为底层RDD上的操作。例如，之前将行流转为单词的例子中，flatMap操作在lines DStream中的每一个RDD上执行，生成words DStream的RDD，如下图：
 ![](http://spark.apache.org/docs/1.4.1/img/streaming-dstream-ops.png)
+
 底层的RDD转换由Spark进行计算。DStream操作隐藏了大部分细节，为开发者提供了便利的高级接口。这些操作将在后边的章节讨论。
 
 #### 输入DStreams和接收器 ####
@@ -275,6 +278,7 @@ cleanedDStream = wordCounts.transform(lambda rdd: rdd.join(spamInfoRDD).filter(.
 ##### Window操作 #####
 Spark Streaming同样提供了窗口计算,允许你在数据的滑动窗口上使用转换。下图展示了一个滑动窗口：
 ![](http://spark.apache.org/docs/1.4.1/img/streaming-dstream-window.png)
+
 如图所示，每次窗口在source DStream上滑动，window内的source RDD会合并，并且作为一个windowed DStream处理。在上边这个例子里，操作被用于最后三个时间单元的数据，并且每次滑动2个时间单元，这意味着每个window操作都需要2个参数：
 
 * window length：window的持续时间
