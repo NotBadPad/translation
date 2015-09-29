@@ -114,7 +114,7 @@ Time: 2014-10-14 15:25:21
 </dependency>
 ```
 为了从Kafka、Flume和Kinesis这样未包含在核心API中的数据源获取数据，你还需要将相应的模块spark-streaming-xyz_2.10加入到依赖中。例如，下边这些组件：
-![](https://github.com/NotBadPad/translation/img/spark-1.png)
+![](https://github.com/NotBadPad/translation/blob/master/img/spark-1.png)
 若要获取最新的列表，请参考maven仓库中完整的支持的列表。
 
 #### 初始化StreamingContext ####
