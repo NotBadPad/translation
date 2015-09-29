@@ -322,3 +322,59 @@ joinedStream = windowedStream.transform(lambda rdd: rdd.join(dataset))
 DStream完整的transformations操作列表可以参见API文档。
 
 #### DStream的输出操作 ####
+输出操作允许DStream的数据被写入外部系统，如数据库或者文件系统。由于输出操作实际上允许转换后的数据被外部系统使用，这会触发DStream的转换操作实际的去执行。现在，我们看下下边这些输出操作的定义：
+
+* print()：在运行streaming程序的驱动结点上打印每个批处理前10个元素。对于开发和调试很有用。**Python API** python中使用pprint()
+* saveAsTextFiles(prefix, [suffix])：将DStream的内容保存到文本文件。文件名将使用 prefix 和 suffix:"prefix-TIME_IN_MS[.suffix]"
+* saveAsObjectFiles(prefix, [suffix])：将DStream的内容保存为序列化的java对象文件，文件名将使用 prefix 和 suffix:"prefix-TIME_IN_MS[.suffix]"
+* saveAsHadoopFiles(prefix, [suffix])：将DStream的内容保存为hadoop文件，文件名将使用 prefix 和 suffix:"prefix-TIME_IN_MS[.suffix]"
+* foreachRDD(func)：最常用的操作是对stream生成都每个RDD使用func方法。这个方法会将每个RDD中的数据写入外部系统，一般是文件、网络或数据库。注意这个方法是在运行streaming程序的驱动进程中执行的，通常包含action操作以增强streaming RDD的计算。
+
+##### 使用foreachRDD的设计模式 #####
+dstream.foreachRDD是一个非常强大的将数据写入外部系统的原始方法。但是理解如何正确高效的使用该方法是很重要的。按照如下方法可以避免一些常见的错误：
+通常往外部系统写入数据需要创建一个connection对象，并使用它来发送数据。为了达到这个目的，开发者往往不经意间会在Spark驱动程序中创建connection对象，然后在Spark worker中使用它。例如：
+```python
+def sendRecord(rdd):
+    connection = createNewConnection()  # executed at the driver
+    rdd.foreach(lambda record: connection.send(record))
+    connection.close()
+
+dstream.foreachRDD(sendRecord)
+```
+这种错误是由于要把connection对象从driver程序传到worker导致的。这类connection对象很少能在机器间传输。这种错误可能表现为序列化错误或初始化错误。正确的做法是在worker上创建connection对象。然而，这将导致另一个常见的错误——每条记录都创建一个新的connection对象：
+```python
+def sendRecord(record):
+    connection = createNewConnection()
+    connection.send(record)
+    connection.close()
+
+dstream.foreachRDD(lambda rdd: rdd.foreach(sendRecord))
+```
+通常创建一个connection对象需要消耗时间和资源，因此对于每个记录都要创建和销毁connection对象是耗费大量不必要的资源并且明显的降低系统吞吐量。更好的解决方法是使用rdd.foreachPartition——在一个RDD分区里仅创建一个connection对象来发送数据。
+```python
+def sendPartition(iter):
+    connection = createNewConnection()
+    for record in iter:
+        connection.send(record)
+    connection.close()
+
+dstream.foreachRDD(lambda rdd: rdd.foreachPartition(sendPartition))
+```
+这个连接创建的消耗就可以平摊到多条记录了。
+最后，还可以通过多个的RDDs/批处理来重用connection对象以进一步优化。可以维护一个静态连接池，在多个往外部系统传送数据的RDD之间可以重用，以此来减少系统消耗。
+```python
+def sendPartition(iter):
+    # ConnectionPool is a static, lazily initialized pool of connections
+    connection = ConnectionPool.getConnection()
+    for record in iter:
+        connection.send(record)
+    # return to the pool for future reuse
+    ConnectionPool.returnConnection(connection)
+
+dstream.foreachRDD(lambda rdd: rdd.foreachPartition(sendPartition))
+```
+注意这些链接应该在需要的时候延迟创建，并且设置超时在长时间不用时销毁。这是将数据发送到外部系统最有效的方式。
+
+###### 其他需要注意的点 ######
+* DStreams会在执行输出操作时被延迟执行，就像只有RDD actions才会触发RDDs执行。具体说，就是DStream输出操作中的RDD actions会触发接收到的数据被处理。因此，如果你的程序里边没有输出操作，或者dstream.foreachRDD()中没有RDD action，程序将不会别执行。系统将在接收数据后直接丢弃。
+* 默认情况下，输出操作只执行一次，且按照程序中定义的顺序。
