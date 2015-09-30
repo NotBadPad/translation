@@ -9,7 +9,7 @@
 	* [输入流和接收器](\#t3-4)
 	* [DStream中的转换](\#t3-5)
 	* [DStream的输出操作](\#t3-6)
-	* DataFrame和SQL操作
+	* [DataFrame和SQL操作](\#t3-7)
 	* MLlib操作
 	* 缓存/持久化
 	* 检查点
@@ -382,3 +382,46 @@ dstream.foreachRDD(lambda rdd: rdd.foreachPartition(sendPartition))
 ###### 其他需要注意的点 ######
 * DStreams会在执行输出操作时被延迟执行，就像只有RDD actions才会触发RDDs执行。具体说，就是DStream输出操作中的RDD actions会触发接收到的数据被处理。因此，如果你的程序里边没有输出操作，或者dstream.foreachRDD()中没有RDD action，程序将不会别执行。系统将在接收数据后直接丢弃。
 * 默认情况下，输出操作只执行一次，且按照程序中定义的顺序。
+
+#### <a NAME="t3-7">DataFrame和SQL操作</a>  ####
+你可以在streaming中很容易的使用DataFrame和SQL。你只需要使用SparkContext创建一个SQLContext供StreamingContext使用即可。而且它可以在驱动程式失败的时候重启，这通过创建一个延迟实例化的单例SQLContext实现。下边例子将会展示。它是通过修改之前的例子，使用DataFrame和SQL来生成单词数量的。每一个RDD被转换成DataFrame，注册成临时表并通过sql查询。
+```python
+# Lazily instantiated global instance of SQLContext
+def getSqlContextInstance(sparkContext):
+    if ('sqlContextSingletonInstance' not in globals()):
+        globals()['sqlContextSingletonInstance'] = SQLContext(sparkContext)
+    return globals()['sqlContextSingletonInstance']
+
+...
+
+# DataFrame operations inside your streaming program
+
+words = ... # DStream of strings
+
+def process(time, rdd):
+    print "========= %s =========" % str(time)
+    try:
+        # Get the singleton instance of SQLContext
+        sqlContext = getSqlContextInstance(rdd.context)
+
+        # Convert RDD[String] to RDD[Row] to DataFrame
+        rowRdd = rdd.map(lambda w: Row(word=w))
+        wordsDataFrame = sqlContext.createDataFrame(rowRdd)
+
+        # Register as table
+        wordsDataFrame.registerTempTable("words")
+
+        # Do word count on table using SQL and print it
+        wordCountsDataFrame = sqlContext.sql("select word, count(*) as total from words group by word")
+        wordCountsDataFrame.show()
+    except:
+        pass
+
+words.foreachRDD(process)
+```
+完整代码参考[源代码](https://github.com/apache/spark/blob/master/examples/src/main/python/streaming/sql_network_wordcount.py)
+
+你同样可以使用sql查询定义在其他线程的streaming数据中的表（也就是说，异步运行StreamingContext）。只要保证StreamingContext村处理足够多的streaming数据以便查询运行即可。否则StreamingContext没有察觉到任何异步查询，将会在查询完成前删除旧数据。例如，你想查询最后一个批处理，但是查询会运行5分钟，那么可以使用streamingContext.remember(Minutes(5))。
+DataFrame更多信息参考[DataFrames and SQL](http://spark.apache.org/docs/1.4.1/sql-programming-guide.html)
+
+#### <a NAME="t3-8">MLlib操作</a> ####
