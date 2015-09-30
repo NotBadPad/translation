@@ -425,3 +425,6 @@ words.foreachRDD(process)
 DataFrame更多信息参考[DataFrames and SQL](http://spark.apache.org/docs/1.4.1/sql-programming-guide.html)
 
 #### <a NAME="t3-8">MLlib操作</a> ####
+同样的你可以轻易使用MLlib提供的机器学习算法。首先，流式线性回归、流式Kmeans算法，可以同时从流数据中学习，并且将模型应用到流数据。除此之外还有大量的机器学习算法，你可以通过历史数据建立学习模型，然后将模型应用在在线数据上。更多参考[MLlib](http://spark.apache.org/docs/1.4.1/mllib-guide.html)
+
+#### <a NAME="t3-9">缓存/持久化</a> ####
