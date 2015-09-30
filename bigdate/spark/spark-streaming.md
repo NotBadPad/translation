@@ -428,3 +428,7 @@ DataFrame更多信息参考[DataFrames and SQL](http://spark.apache.org/docs/1.4
 同样的你可以轻易使用MLlib提供的机器学习算法。首先，流式线性回归、流式Kmeans算法，可以同时从流数据中学习，并且将模型应用到流数据。除此之外还有大量的机器学习算法，你可以通过历史数据建立学习模型，然后将模型应用在在线数据上。更多参考[MLlib](http://spark.apache.org/docs/1.4.1/mllib-guide.html)
 
 #### <a NAME="t3-9">缓存/持久化</a> ####
+与RDD一样，DStreams同样允许开发者将数据持久化到内存。在DStream上使用persist()会自动将每个RDD持久化到内存。当DStream中的数据要被计算多次是这是很有用的。对于基于窗口操作的reduceByWindow和reduceByKeyAndWindow，以及基于状态的操作updateStateByKey而言，默认都会这么处理。因此，基于窗口操作的DStreams的数据会自动持久化到内存，不需要显式调用persist()。
+对于接收数据的输入流而言，默认持久化级别是在两个结点上存放副本以便容灾。
+注意，与RDD不同，DStream默认持久化级别是将数据序列化到内存。这将会在性能优化中讨论。更多关于不同持久化级别的信息参考[Spark编程指南](http://spark.apache.org/docs/1.4.1/programming-guide.html#rdd-persistence)
+
