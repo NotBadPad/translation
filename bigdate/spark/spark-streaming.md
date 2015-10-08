@@ -10,11 +10,11 @@
 	* [DStream中的转换](\#t3-5)
 	* [DStream的输出操作](\#t3-6)
 	* [DataFrame和SQL操作](\#t3-7)
-	* MLlib操作
-	* 缓存/持久化
-	* 检查点
-	* 部署程序
-	* 监控程序
+	* [MLlib操作](\#t3-8)
+	* [缓存/持久化](\#t3-9)
+	* [检查点](\#t3-10)
+	* [部署程序](\#t3-11)
+	* [监控程序](\#t3-12)
 * 性能优化
 	* 减少批处理时间
 	* 设置合理的批处理间隔
@@ -432,3 +432,18 @@ DataFrame更多信息参考[DataFrames and SQL](http://spark.apache.org/docs/1.4
 对于接收数据的输入流而言，默认持久化级别是在两个结点上存放副本以便容灾。
 注意，与RDD不同，DStream默认持久化级别是将数据序列化到内存。这将会在性能优化中讨论。更多关于不同持久化级别的信息参考[Spark编程指南](http://spark.apache.org/docs/1.4.1/programming-guide.html#rdd-persistence)
 
+#### <a NAME="t3-10">检查点</a> ####
+streaming应用需要能够24*7的运行，因此必须能够兼容与应用程序逻辑无关的错误（系统错误、JVM崩溃等）。为此，Spark Streaming需要使用checkpoint在一个容灾存储系统上记录足够的信息，以便能够从错误中恢复。这里有两种数据类型：
+
+* Metadata checkpointing - 将流计算中的信息保存到想HDFS这样可靠地存储系统中。这被用于恢复运行streaming application驱动程序结点上的错误。Metadata包含：
+	
+	* Configuration - 用来创建streaming application的配置文件
+	* DStream operations - streaming application中定义的的DStream操作
+	* Incomplete batches - jobs中已经排队但是没有完成的批处理
+* Data checkpointing - 将生成的RDD保存到可靠的存储系统。对于合并多个批处理这样有状态的转换，这是很有必要的。在这些转换中，新生成的RDD依赖于之前的RDD，随着时间增加依赖链的长度会越来越大。为了避免再恢复的时候依赖链无限增大，转换中间产生的RDD会定期的保存到可靠存储系统，以剪短依赖链。
+简而言之，metadata检查点用来恢复驱动程序中的错误，RDD检查点在使用有状态的转换时时必须的。
+
+##### 什么时候使用检查点 #####
+启用应用程序中的检查点有以下要求：
+
+* 
