@@ -1,0 +1,6 @@
+#On Designing and Deploying Internet-Scale Service
+
+###原文地址  
+http://mvdirona.com/jrh/TalksAndPapers/JamesRH_Lisa.pdf
+
+###译文  
