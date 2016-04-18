@@ -8,3 +8,6 @@ indexer会分析hbase的数据变更事件，适配并创建对应的solr docume
 solr中被索引的documents文件关联到hbase唯一的行id上(row-key),这样你就可以通过solr查询被存储在hbase中的数据了。
 HBase的复制是基于读取hbase的log文件实现的，这些文件也是hbase实际存储的内容：这样就不会丢失或者有额外的事件。无论什么情况下，这些log文件都会包含需要索引的数据，所以不需要在habse上进行代价较大的随机读操作(read-row属性参见[Indexer Configuration](https://github.com/NGDATA/hbase-indexer/wiki/Indexer-configuration))
 hbase复制的时间是批量进行的，HBase-indexer将使用批量/缓存区更新solr，以避免短时间内相同的row被多次更新。
+### 水平拓展能力  
+indexers的信息被存储在zookeeper上，就像新的hbase的regionservers可以很方便的被添加到集群中一样，indexers新节点也可以很方便的添加到集群。
+对于单独配置的indexer，其索引工作将被分片到集群的机器上执行。因此，可以向集群增加indexer以进行水平拓展。
