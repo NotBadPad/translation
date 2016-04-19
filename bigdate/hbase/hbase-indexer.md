@@ -11,3 +11,6 @@ hbase复制的时间是批量进行的，HBase-indexer将使用批量/缓存区�
 ### 水平拓展能力  
 indexers的信息被存储在zookeeper上，就像新的hbase的regionservers可以很方便的被添加到集群中一样，indexers新节点也可以很方便的添加到集群。
 对于单独配置的indexer，其索引工作将被分片到集群的机器上执行。因此，可以向集群增加indexer以进行水平拓展。
+### 自动失败处理
+hbase indexer基于hbase复制系统实现，而该系统设计上就能够容忍硬件故障，因此indexer也拥有故障处理的能力。
+一般情况下，处理索引的节点或solr节点挂掉，并不会呆滞hbase indexer上的数据丢失。
