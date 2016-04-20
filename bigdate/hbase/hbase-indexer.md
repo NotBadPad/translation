@@ -1,4 +1,5 @@
-##hbase-indexer  
+#hbase-indexer  
+## 概述
 ### 简介  
 HBase Indexer为存储在hbase中的数据提供了索引(通过solr)。它使用scale提供了一种灵活和可扩展的方式来定义索引规则。
 由于索引是异步建立，所以不会对hbase的写入产生影响。SolrCloud被用来存储实际索引，以用来增强hbase的索引能力。  
@@ -14,3 +15,10 @@ indexers的信息被存储在zookeeper上，就像新的hbase的regionservers可
 ### 自动失败处理
 hbase indexer基于hbase复制系统实现，而该系统设计上就能够容忍硬件故障，因此indexer也拥有故障处理的能力。
 一般情况下，处理索引的节点或solr节点挂掉，并不会呆滞hbase indexer上的数据丢失。
+
+## 环境要求
+运行hbase indexer需要软件如下：		
+- hbase 0.94 x  
+- SolrCloud 4 x  
+- Zookeeper 3.x   
+所有组件可以单机模式运行，也可以以集群模式运行。
